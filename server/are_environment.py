@@ -2,8 +2,8 @@ import random
 import json
 import statistics
 
-from ..models import AreAction, AreObservation
-from ..graders import grade_easy, grade_medium, grade_hard
+from models import AreAction, AreObservation
+from graders import grade_easy, grade_medium, grade_hard
 
 
 class AreEnvironment:
