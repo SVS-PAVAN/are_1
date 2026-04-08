@@ -7,4 +7,4 @@ COPY . .
 RUN pip install fastapi uvicorn pydantic openai requests
 
 ENV ENABLE_WEB_INTERFACE=true
-CMD ["python", "server/app.py"]
+CMD ["python", "-m", "server.app"]
