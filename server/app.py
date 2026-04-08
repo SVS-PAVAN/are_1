@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 import uvicorn
 
-from server.are_environment import AreEnvironment
-from models import AreAction
+from .are_environment import AreEnvironment
+from ..models import AreAction
 
 app = FastAPI()
 env = AreEnvironment()
