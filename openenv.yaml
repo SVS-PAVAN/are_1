@@ -1,0 +1,19 @@
+name: ai-data-analyst-env
+entrypoint: server.are_environment:AreEnvironment
+
+description: |
+  Advanced AI data analyst environment with tool-use and self-reflection.
+
+tasks:
+  - id: easy
+    description: Compute average salary
+  - id: medium
+    description: Identify highest paying role
+  - id: hard
+    description: Compare salaries and recommend actions
+
+tags:
+  - openenv
+  - reasoning
+  - tool-use
+  - reflection
