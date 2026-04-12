@@ -16,18 +16,27 @@ def extract_json(text):
     import re
     match = re.search(r"\{.*?\}", text, re.DOTALL)
     if match:
-        return json.loads(match.group())
+        try:
+            return json.loads(match.group())
+        except:
+            pass
     return {"tool_name": "finish", "tool_input": "error"}
 
 
 def run():
     scores = []
 
-    for _ in range(3):
+    for episode in range(3):
+        # 🔹 RESET ENV
         res = requests.post(f"{ENV_URL}/reset").json()
         obs = res["observation"]
 
-        for step in range(8):
+        task = obs.get("task", "unknown")
+
+        # ✅ REQUIRED LOG FORMAT
+        print(f"START task={task}")
+
+        for step in range(1, 9):
             prompt = f"""
 You are an advanced reasoning agent.
 
@@ -38,28 +47,52 @@ Reflection: {obs.get('reflection')}
 You can use tools:
 query_db, calculate, search, reflect, finish
 
-Think carefully. Use reflect if uncertain.
+Think step-by-step:
+1. Get data
+2. Process data
+3. Compute
+4. Finish
 
-Return JSON only.
+Return ONLY JSON:
+{{"tool_name": "...", "tool_input": "..."}}
 """
 
-            response = client.chat.completions.create(
-                model=MODEL,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.2,
-            )
+            try:
+                response = client.chat.completions.create(
+                    model=MODEL,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.2,
+                )
 
-            action = extract_json(response.choices[0].message.content)
+                raw_text = response.choices[0].message.content
 
+            except Exception as e:
+                raw_text = str(e)
+
+            action = extract_json(raw_text)
+
+            # 🔹 STEP ENV
             res = requests.post(f"{ENV_URL}/step", json=action).json()
             obs = res["observation"]
 
+            reward = res.get("reward", 0.0)
+
+            # ✅ REQUIRED STEP LOG
+            print(
+                f"STEP step={step} action={action} reward={reward:.2f}"
+            )
+
             if res["done"]:
-                scores.append(res["info"]["score"])
+                score = res.get("info", {}).get("score", 0.0)
+                scores.append(score)
+
+                # ✅ REQUIRED END LOG
+                print(f"END score={score:.2f}")
                 break
 
-    print("Scores:", scores)
-    print("Average:", sum(scores) / len(scores))
+    # ✅ FINAL SUMMARY
+    avg_score = sum(scores) / len(scores) if scores else 0.0
+    print(f"FINAL average_score={avg_score:.2f}")
 
 
 if __name__ == "__main__":
